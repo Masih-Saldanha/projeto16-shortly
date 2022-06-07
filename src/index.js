@@ -12,4 +12,6 @@ app.use(cors());
 
 app.use(mainRouter)
 
-app.listen(process.env.PORT || 4000, () => console.log(`API listening on port: ${process.env.PORT}`));
+app.listen(process.env.PORT || 4000, () => {
+    console.log(`API listening on port: ${process.env.PORT}`)
+});
