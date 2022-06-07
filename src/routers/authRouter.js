@@ -6,6 +6,6 @@ import { validateSignUp } from "../middlewares/authMiddleware.js";
 const authRouter = Router();
 
 authRouter.post("/signup", validateSignUp, signUp);
-authRouter.post("/signup", signIn);
+authRouter.post("/signin", signIn);
 
 export default authRouter;

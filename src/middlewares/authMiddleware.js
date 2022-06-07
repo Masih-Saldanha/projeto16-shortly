@@ -7,16 +7,16 @@ export async function validateSignUp(req, res, next) {
     const user = req.body;
     const schemaValidation = signUpSchema.validateAsync(user, { abortEarly: false });
     if (schemaValidation.error) {
-        res.send(schemaValidation.error).status(422);
+        return res.send(schemaValidation.error).status(422);
     }
     try {
-        const user = db.query(`
+        const userFind = await db.query(`
         SELECT * 
         FROM users
         WHERE email = $1;
         `, [user.email]);
-        if (user.rows.length < 1) {
-            res.send(`${user.email} is already in use.`).status(422);
+        if (userFind.rows.length < 1) {
+            return res.send(`${user.email} is already in use.`).status(422);
         }
         
         next();
