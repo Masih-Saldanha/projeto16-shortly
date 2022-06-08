@@ -1,12 +1,15 @@
+import bcrypt from "bcrypt";
+
 import db from "./../db.js";
 
 export async function signUp(req, res) {
     const { name, email, password } = req.body;
     try {
+        const encryptedPassword = await bcrypt.hash(password, 10);
         await db.query(`
             INSERT INTO users (name, email, password)
             VALUES ($1, $2, $3);
-        `, [name, email, password]);
+        `, [name, email, encryptedPassword]);
 
         res.sendStatus(201);
     } catch (error) {
