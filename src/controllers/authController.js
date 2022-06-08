@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
 
 import db from "./../db.js";
 
@@ -14,16 +15,31 @@ export async function signUp(req, res) {
         res.sendStatus(201);
     } catch (error) {
         console.log(error);
-        res.status(422).send(error);
+        res.status(500).send(error);
     }
 };
 
 export async function signIn(req, res) {
+    const { id } = res.locals.user;
+    const isSessionRegistered = res.locals.isSessionRegistered;
+    const token = uuid();
     try {
+        if (isSessionRegistered.rows.length === 0) {
+            await db.query(`
+                INSERT INTO sessions (token, "userId")
+                VALUES ($1, $2);
+            `, [token, id]);
+        } else {
+            await db.query(`
+                UPDATE sessions 
+                SET token = $1
+                WHERE "userId" = $2;
+        `, [token, id]);
+        }
         
-        res.sendStatus(200);
+        res.status(200).send(token);
     } catch (error) {
         console.log(error);
-        res.status(422).send(error);
+        res.status(500).send(error);
     }
 };
