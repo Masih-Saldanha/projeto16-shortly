@@ -5,9 +5,12 @@ import { signUpSchema } from "../joiSchemas/authSchema.js";
 
 export async function validateSignUp(req, res, next) {
     const user = req.body;
-    const schemaValidation = signUpSchema.validateAsync(user, { abortEarly: false });
+    const schemaValidation = signUpSchema.validate(user, { abortEarly: false });
     if (schemaValidation.error) {
-        return res.send(schemaValidation.error).status(422);
+        return res.status(422).send(schemaValidation.error.details.map(error => {
+            console.log(error.message);
+            return error.message;
+        }));
     }
     try {
         const userFind = await db.query(`
@@ -15,13 +18,13 @@ export async function validateSignUp(req, res, next) {
         FROM users
         WHERE email = $1;
         `, [user.email]);
-        if (userFind.rows.length < 1) {
-            return res.send(`${user.email} is already in use.`).status(422);
+        if (userFind.rows.length > 0) {
+            return res.status(422).send(`The e-mail ${user.email} is already in use. Try to register another one.`);
         }
         
         next();
     } catch (error) {
         console.log(error);
-        res.send(error).status(422);
+        res.status(422).send(error);
     }
 };
