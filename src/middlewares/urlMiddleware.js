@@ -54,6 +54,30 @@ export async function validateShortUrlOnTable(req, res, next) {
         next();
     } catch (error) {
         console.log(error);
-        res.status(500).send(error);        
+        res.status(500).send(error);
+    }
+}
+
+export async function validateUrlToDelete(req, res, next) {
+    const { id } = req.params;
+    const idToInteger = parseInt(id);
+    const session = res.locals.session;
+    try {
+        const urlData = await db.query(`
+            SELECT * FROM urls
+            WHERE id = $1;
+        `, [idToInteger]);
+        if (urlData.rows.length === 0) {
+            return res.sendStatus(404);
+        }
+
+        if (session.id !== urlData.rows[0].sessionId) {
+            return res.sendStatus(401);
+        }
+
+        next();
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 }

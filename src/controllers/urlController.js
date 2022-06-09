@@ -50,3 +50,19 @@ export async function redirectToUrl(req, res) {
         res.status(500).send(error);
     }
 }
+
+export async function deleteUrl(req, res) {
+    const { id } = req.params;
+    const idToInteger = parseInt(id);
+    try {
+        await db.query(`
+            DELETE FROM urls
+            WHERE id = $1;
+        `, [idToInteger]);
+
+        res.sendStatus(204);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+}
