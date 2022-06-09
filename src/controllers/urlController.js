@@ -31,6 +31,22 @@ export async function getUrlById(req, res) {
         res.status(200).send(objectToBeSent);
     } catch (error) {
         console.log(error);
-        res.status(500).send(error);        
+        res.status(500).send(error);
+    }
+}
+
+export async function redirectToUrl(req, res) {
+    const shortUrlData = res.locals.shortUrlData;
+    try {
+        await db.query(`
+            UPDATE urls
+            SET "visitCount" = "visitCount" + 1
+            WHERE id = $1;
+        `, [shortUrlData.id]);
+
+        res.redirect(shortUrlData.url);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
     }
 }
