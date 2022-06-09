@@ -1,3 +1,4 @@
+import db from "./../db.js"
 import { longUrlSchema } from "../joiSchemas/urlSchema.js";
 
 export async function validateUrl(req, res, next) {
@@ -13,5 +14,26 @@ export async function validateUrl(req, res, next) {
     } catch (error) {
         console.log(error);
         res.status(500).send(error);        
+    }
+}
+
+export async function validateIdOnTable(req, res, next) {
+    const { id } = req.params;
+    const idToInteger = parseInt(id);
+    try {
+        const isIdOnTable = await db.query(`
+            SELECT * FROM urls
+            WHERE id = $1;
+        `, [idToInteger]);
+        if (isIdOnTable.rows.length === 0) {
+            return res.sendStatus(404);
+        }
+
+        res.locals.idData = isIdOnTable.rows[0];
+
+        next();
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);     
     }
 }

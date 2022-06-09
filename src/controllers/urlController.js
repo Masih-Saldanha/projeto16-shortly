@@ -18,3 +18,19 @@ export async function urlShortener(req, res) {
         res.status(500).send(error);
     }
 }
+
+export async function getUrlById(req, res) {
+    const idData = res.locals.idData;
+    try {
+        const objectToBeSent = {
+            id: idData.id,
+            shortUrl: idData.shortUrl,
+            url: idData.url
+        }
+
+        res.status(200).send(objectToBeSent);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);        
+    }
+}
