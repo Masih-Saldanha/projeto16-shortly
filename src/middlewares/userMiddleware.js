@@ -1,10 +1,22 @@
 import db from "./../db.js";
 
 export async function validateUserData(req, res, next) {
+    const session = res.locals.session;
     const { id } = req.params;
     const idToInteger = parseInt(id);
     try {
         const isIdUserOnTable = await db.query(`
+            SELECT 
+                * 
+            FROM sessions
+            JOIN users ON sessions."userId" = users.id
+            WHERE users.id = $1 AND sessions.token = $2;
+        `, [idToInteger, session.token]);
+        if (isIdUserOnTable.rows.length === 0) {
+            return res.sendStatus(404);
+        }
+
+        const userUrlTable = await db.query(`
             SELECT 
                 users.id, 
                 users.name, 
@@ -15,27 +27,26 @@ export async function validateUserData(req, res, next) {
             FROM users
             JOIN sessions ON users.id = sessions."userId"
             JOIN urls ON sessions.id = urls."sessionId"
-            WHERE users.id = $1;
-        `, [idToInteger]);
-        if (isIdUserOnTable.rows.length === 0) {
-            return res.sendStatus(404);
-        }
+            WHERE users.id = $1 AND sessions.token = $2;
+        `, [idToInteger, session.token]);
 
         let visitCount = 0;
-        isIdUserOnTable.rows.forEach(object => {
-            visitCount += object.visitCount;
-        });
+        let shortenedUrls = [];
+        if (userUrlTable.rows.length === 0) {
+            shortenedUrls = [];
+        } else {
+            shortenedUrls = userUrlTable.rows.map(object => {
+                visitCount += object.visitCount;
+                return {
+                    id: object.urlId,
+                    shortUrl: object.shortUrl,
+                    url: object.url,
+                    visitCount: object.visitCount
+                }
+            })
+        }
 
-        const shortenedUrls = isIdUserOnTable.rows.map(object => {
-            return {
-                id: object.urlId,
-                shortUrl: object.shortUrl,
-                url: object.url,
-                visitCount: object.visitCount
-            }
-        })
-
-        res.locals.userData = isIdUserOnTable.rows;
+        res.locals.userData = isIdUserOnTable.rows[0];
         res.locals.visitCount = visitCount;
         res.locals.shortenedUrls = shortenedUrls;
 

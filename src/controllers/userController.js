@@ -6,8 +6,8 @@ export async function getUserData(req, res) {
     const shortenedUrls = res.locals.shortenedUrls;
     try {
         const objectToBeSent = {
-            id: userData[0].id,
-            name: userData[0].name,
+            id: userData.id,
+            name: userData.name,
             visitCount,
             shortenedUrls
         };
