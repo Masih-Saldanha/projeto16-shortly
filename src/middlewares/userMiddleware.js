@@ -58,9 +58,31 @@ export async function validateUserData(req, res, next) {
 }
 
 export async function validateUsersRanking(req, res, next) {
-    console.log("passou no middleware");
     try {
+        const rankingTable = await db.query(`
+            SELECT 
+                users.id,
+                users.name,
+                COUNT(urls.id) as "linkCount",
+                SUM(urls."visitCount") as "visitCount"
+            FROM users
+            JOIN sessions ON users.id = sessions."userId"
+            LEFT JOIN urls ON sessions.id = urls."sessionId"
+            GROUP BY users.id, users.name
+            ORDER BY "visitCount" DESC NULLS LAST, "linkCount" DESC
+            LIMIT 10;
+        `);
 
+        rankingTable.rows.forEach(object => {
+            object.linkCount = parseInt(object.linkCount);
+            if (object.visitCount === null) {
+                object.visitCount = 0;
+            } else {
+                object.visitCount = parseInt(object.visitCount);
+            }
+        })
+        
+        res.locals.rankingTable = rankingTable.rows;
 
         next();
     } catch (error) {

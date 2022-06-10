@@ -1,5 +1,3 @@
-import db from "./../db.js";
-
 export async function getUserData(req, res) {
     const userData = res.locals.userData;
     const visitCount = res.locals.visitCount;
@@ -20,10 +18,9 @@ export async function getUserData(req, res) {
 }
 
 export async function getUsersRanking(req, res) {
-    console.log("passou no controller");
+    const rankingTable = res.locals.rankingTable;
     try {
-        
-        res.sendStatus(200);
+        res.status(200).send(rankingTable);
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
